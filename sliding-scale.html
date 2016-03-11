@@ -1,0 +1,174 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<dom-module id="sliding-scale">
+  <template>
+    <style>
+      :host {
+        --center-marker-color:red;
+        --number-color:#333;
+        --value-color:#333;
+        --name-color:#333;
+        display:block;
+        margin-bottom:0px;
+        padding-bottom:0px;
+        border:1px solid #eee;
+      }
+      canvas{
+        vertical-align: middle;
+      }
+      .bla{color: var(--center-marker-color);color:var(--value-color)}
+    </style>
+      <canvas id="canvas" height="[[height]]" width="[[width]]" on-track="handleTrack" ></canvas>
+      <content select="sliding-marker"></content>
+  </template>
+
+  <script>
+  Polymer({
+    is: 'sliding-scale',
+    ctx:null,
+    oldvalue:0,
+    fx:0,
+    behaviors: [
+     Polymer.IronResizableBehavior
+   ],
+   listeners: {
+      'iron-resize': '_onIronResize'
+    },
+    properties: {
+      name: {type:String,value:"Name"},
+      width: {type:Number,value:100},
+      height: {type:Number,value:60},
+      valuePerPixel: {type:Number,value:10},
+      pixelInterval: {type:Number,value:5},
+      markInterval: {type:Number,value:100},
+      value: {type:Number,value:0,notify:true},
+      minvalue: {type:Number,value:0},
+      roundTo: {type:Number,value:2},
+      unit: {type:String,value:""}
+    },
+    ready:function(){
+      console.log(this.markInterval)
+      this.addEventListener("value-changed",this.valueChanged,true)
+      this.ctx=this.$.canvas.getContext("2d")
+      this.draw()
+    },
+    valueChanged:function(e){
+      this.draw()
+    },
+    _onIronResize: function() {
+      var computedStyle
+      if (window.getComputedStyle) {
+        computedStyle = getComputedStyle(this, null)
+      } else {
+        computedStyle = this.currentStyle
+      }
+      var left = parseInt(computedStyle.borderLeftWidth.replace("px",""))
+      var right = parseInt(computedStyle.borderLeftWidth.replace("px",""))
+      var pright = parseInt(computedStyle.paddingRight.replace("px",""))
+      var pleft = parseInt(computedStyle.paddingLeft.replace("px",""))
+      var x = this.width = Math.floor(this.offsetWidth )-(left+right+pleft+pright);
+      this.draw()
+    },
+    handleTrack: function(e) {
+        switch(e.detail.state) {
+          case 'start':
+            this.oldvalue=this.value
+            break;
+          case 'track':
+            var newvalue=this.oldvalue+this.Pixel2Value(-e.detail.dx)
+            if(newvalue>=this.minvalue){this.value=newvalue}else{this.value=this.minvalue}
+            this.fire("change",{value:this.value})
+            break;
+          case 'end':
+
+            break;
+        }
+      },
+    fade: function(){
+
+    },
+    draw:function(){
+      var ctx = this.ctx
+      ctx.clearRect ( 0 , 0 , this.width , this.height );
+      ctx.rect ( 0 , 0 , this.width , this.height );
+      ctx.clip( )
+      var vdiff  = ( ( this.value*100 ) % ( this.valuePerPixel * 100 ) ) / 100
+      var pi     = this.value-vdiff
+      var pdiff  = this.value2Pixel(vdiff)
+      for( var i = this.width / 2 - pdiff ; i < this.width ; i += this.pixelInterval ) {
+        var px = Math.round( i )
+ctx.fillStyle=this.getComputedStyleValue('--number-color')
+        if( Math.round(pi*100) % ( this.markInterval*100) == 0 ) {
+
+          ctx.fillRect(px,this.height - (this.height * 0.4) ,1,this.height*0.4);
+          ctx.textAlign = "center";
+
+          ctx.fillText(Math.round( pi ), px, this.height -(this.height*0.4) - 5);
+        }else{
+          if(Math.round(pi*100)%(this.markInterval*100)==this.markInterval*50){
+
+            ctx.fillRect( px , this.height-(this.height*0.3) , 1 , this.height-(this.height*0.3) );
+          }else{
+
+            ctx.fillRect( px , this.height-(this.height*0.2) , 1 , this.height-(this.height*0.2) );
+          }
+        }
+        pi += this.valuePerPixel
+      }
+      var pi    = this.value - vdiff
+      var pdiff = this.value2Pixel( vdiff )
+      for( var i=this.width / 2 - pdiff ; i > 0 ; i -= this.pixelInterval ) {
+        var px        = Math.round( i )
+ctx.fillStyle=this.getComputedStyleValue('--number-color')
+        if ( Math.round( pi * 10000 ) / 10000 >= this.minvalue ) {
+          if ( Math.round( pi * 100 ) % ( this.markInterval * 100 ) == 0 ) {
+
+            ctx.fillRect(px,this.height - (this.height * 0.4) ,1,this.height*0.4);
+
+
+            ctx.fillText(Math.round( pi ), px, this.height -(this.height*0.4) - 5);
+          } else {
+            if( Math.round( pi * 100 ) % ( this.markInterval * 100 ) == this.markInterval * 50 ) {
+
+              ctx.fillRect( px , this.height-(this.height*0.3) , 1 , this.height-(this.height*0.3) );
+            }else{
+
+              ctx.fillRect( px , this.height-(this.height*0.2) , 1 , this.height-(this.height*0.2) );
+            }
+          }
+          pi -= this.valuePerPixel
+        }
+      }
+
+      var sm = this.querySelectorAll("sliding-marker")
+      for(var i=0;i<sm.length;i++){
+        var start =sm.item(i).getAttribute("start")
+        var end =sm.item(i).getAttribute("end")
+        var color =sm.item(i).getAttribute("color")
+        ctx.fillStyle=color
+        ctx.fillRect(this.width / 2 + this.value2Pixel( start - this.value ),this.height-2,this.value2Pixel( end-start ),this.height-2 )
+      }
+
+
+
+      ctx.fillStyle = this.getComputedStyleValue('--center-marker-color')
+      ctx.fillRect( this.width / 2 , 0 , 1 , this.height )
+
+      ctx.fillStyle = this.getComputedStyleValue('--name-color')
+      ctx.textAlign = "start"
+
+      ctx.fillText(this.name, 5, 13);
+      ctx.fillStyle = this.getComputedStyleValue('--value-color')
+      ctx.textAlign = "end"
+      var rounder   = Math.pow(10,this.roundTo)
+      ctx.fillText(Math.floor(this.value*rounder)/rounder+" "+ this.unit, this.width - 5, 13);
+    },
+    value2Pixel:function(x){
+      return x*this.pixelInterval/this.valuePerPixel
+    },
+    Pixel2Value:function(x){
+      return x*this.valuePerPixel/this.pixelInterval
+    }
+  });
+  </script>
+</dom-module>
