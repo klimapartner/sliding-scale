@@ -86,7 +86,7 @@
             this.ddx=e.detail.ddx
             break;
           case 'end':
-            setTimeout(this.fade,20,this)
+            if(Math.abs(this.ddx)>5) setTimeout(this.fade,20,this)
             break;
         }
       },
