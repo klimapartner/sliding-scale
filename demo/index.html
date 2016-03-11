@@ -5,7 +5,14 @@
 </head>
   <body>
     <div style="max-width:800px">
-      <sliding-scale value="2016" name="Year" mark-interval="10" value-per-pixel="1" pixel-interval="5"></sliding-scale>
+      <sliding-scale id="s1" value="2016" name="Year" mark-interval="10" value-per-pixel="1" pixel-interval="5"></sliding-scale>
+      <sliding-scale id="s2" value="100" name="Year" mark-interval="10" value-per-pixel="1" pixel-interval="5"></sliding-scale>
     </div>
+    <script>
+    document.getElementById("s1").addEventListener("change",setTest,true)
+    function setTest(e){
+      document.getElementById("s2").value=e.detail.value*2
+    }
+    </script>
   </body>
 </html>

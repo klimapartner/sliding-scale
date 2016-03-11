@@ -18,7 +18,7 @@
       }
       .bla{color: var(--center-marker-color);color:var(--value-color)}
     </style>
-      <canvas id="canvas" height="[[height]]" width="[[width]]" on-track="handleTrack" ></canvas>
+      <canvas id="canvas" height="[[height]]" width="[[width]]" on-track="handleTrack" on-down="handleTab"></canvas>
       <content select="sliding-marker"></content>
   </template>
 
@@ -70,6 +70,10 @@
       var x = this.width = Math.floor(this.offsetWidth )-(left+right+pleft+pright);
       this.draw()
     },
+    handleTab: function(e){
+      this.ddx=0
+      console.log(this.ddx)
+    },
     handleTrack: function(e) {
         switch(e.detail.state) {
           case 'start':
@@ -87,10 +91,12 @@
         }
       },
     fade: function(x){
-      x.value-=x.ddx/3
+      x.value-=x.Pixel2Value(x.ddx)
+      if(x.value<=x.minvalue) x.value=x.minvalue
+      x.fire("change",{value:x.value})
       if(x.ddx>0) x.ddx-=0.25
       if(x.ddx<0) x.ddx+=0.25
-      if(x.ddx!=0) setTimeout(x.fade,20,x)
+      if(x.ddx!=0 || x.value<=x.minvalue) setTimeout(x.fade,20,x)
     },
     draw:function(){
       var ctx = this.ctx
