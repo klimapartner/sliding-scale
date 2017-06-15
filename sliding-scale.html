@@ -128,6 +128,17 @@
       var vdiff  = ( ( this.value*100 ) % ( this.valuePerPixel * 100 ) ) / 100
       var pi     = this.value-vdiff
       var pdiff  = this.value2Pixel(vdiff)
+
+      var sm = this.querySelectorAll("sliding-marker")
+      for(var i=0;i<sm.length;i++){
+        var start =sm.item(i).getAttribute("start")
+        var end =sm.item(i).getAttribute("end")
+        var color =sm.item(i).getAttribute("color")
+        var sh = sm.item(i).getAttribute("height") || 10
+        ctx.fillStyle=color
+        ctx.fillRect(this.width / 2 + this.value2Pixel( start - this.value ),this.height-sh,this.value2Pixel( end-start ),this.height-sh )
+      }
+
       for( var i = this.width / 2 - pdiff ; i < this.width ; i += this.pixelInterval ) {
         var px = Math.round( i )
         ctx.fillStyle=this.getComputedStyleValue('--number-color')
@@ -173,14 +184,7 @@
         }
       }
 
-      var sm = this.querySelectorAll("sliding-marker")
-      for(var i=0;i<sm.length;i++){
-        var start =sm.item(i).getAttribute("start")
-        var end =sm.item(i).getAttribute("end")
-        var color =sm.item(i).getAttribute("color")
-        ctx.fillStyle=color
-        ctx.fillRect(this.width / 2 + this.value2Pixel( start - this.value ),this.height-4,this.value2Pixel( end-start ),this.height-4 )
-      }
+
 
       ctx.fillStyle = this.getComputedStyleValue('--center-marker-color')
       ctx.fillRect( this.width / 2 , 0 , 1 , this.height )
