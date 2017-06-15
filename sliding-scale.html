@@ -6,9 +6,9 @@
       :host {
         --center-marker-color:red;
         --number-color:#333;
-        --value-color:#333;
-        --name-color:#333;
-        --name-font:bold 15px Roboto;
+        --value-color:#0069B3;
+        --name-color:#838678;
+        --name-font:12px Roboto;
         --value-font:bold 15px Roboto;
         --number-font:bold 15px Roboto;
         --name-offset: 13;
@@ -18,14 +18,24 @@
         margin-bottom:0px;
         padding-bottom:0px;
         border:1px solid #eee;
+        position:relative;
+        --paper-input-container-input: {
+      font-size: 24px;text-align:right;color:var(--value-color)
+    };
       }
       canvas{
         vertical-align: middle;
       }
+      #valuetext{display:flex;position:absolute;top:0px;right:10px;align-items:center;justify-content:flex-end;color:var(--name-color)}
+      paper-input{width:5em;margin-right:5px}
       .bla{color: var(--center-marker-color);color:var(--value-color)}
     </style>
       <canvas id="canvas" height="[[height]]" width="[[width]]" on-track="handleTrack" on-down="handleTab"></canvas>
       <content select="sliding-marker"></content>
+      <div id="valuetext">
+        <paper-input no-label-float id="textbox" value="[[rounded]]"  on-change="handleChange"></paper-input>
+        <div>[[unit]]</div>
+      </div>
   </template>
 
   <script>
@@ -49,17 +59,19 @@
       pixelInterval: {type:Number,value:5},
       markInterval: {type:Number,value:100},
       value: {type:Number,value:0,notify:true},
+      rounded:{type:Number,value:0},
       minvalue: {type:Number,value:0},
-      roundTo: {type:Number,value:2},
-      unit: {type:String,value:""}
+      roundTo: {type:Number,value:0},
+      unit: {type:String,value:"",notify:true}
     },
     ready:function(){
-      console.log(this.markInterval)
       this.addEventListener("value-changed",this.valueChanged,true)
       this.ctx=this.$.canvas.getContext("2d")
       this.draw()
     },
     valueChanged:function(e){
+      var r = this.getAttribute("roundTo")
+      this.rounded=this.value.toFixed(r)
       this.draw()
     },
     _onIronResize: function() {
@@ -76,6 +88,10 @@
       var x = this.width = Math.floor(this.offsetWidth )-(left+right+pleft+pright);
       this.draw()
     },
+    handleChange: function(e){
+      this.value=parseFloat(e.target.value)
+      this.fire("vchange",{value:this.value})
+    },
     handleTab: function(e){
       this.ddx=0
     },
@@ -87,7 +103,7 @@
           case 'track':
             var newvalue=this.oldvalue+this.Pixel2Value(-e.detail.dx)
             if(newvalue>=this.minvalue){this.value=newvalue}else{this.value=this.minvalue}
-            this.fire("change",{value:this.value})
+            this.fire("vchange",{value:this.value})
             this.ddx=e.detail.ddx
             break;
           case 'end':
@@ -98,7 +114,7 @@
     fade: function(x){
       x.value-=x.Pixel2Value(x.ddx)
       if(x.value<=x.minvalue) x.value=x.minvalue
-      x.fire("change",{value:x.value})
+      x.fire("vchange",{value:x.value})
       if(x.ddx>0) x.ddx-=0.25
       if(x.ddx<0) x.ddx+=0.25
       if(x.ddx!=0 || x.value<=x.minvalue) setTimeout(x.fade,20,x)
@@ -179,7 +195,7 @@
 
       var rounder   = Math.pow(10,this.roundTo)
       ctx.font=this.getComputedStyleValue('--value-font')
-      ctx.fillText(Math.floor(this.value*rounder)/rounder+" "+ this.unit, this.width - 5, this.getComputedStyleValue('--value-offset'));
+      //ctx.fillText(Math.floor(this.value*rounder)/rounder+" "+ this.unit, this.width - 5, this.getComputedStyleValue('--value-offset'));
 
     },
     value2Pixel:function(x){
