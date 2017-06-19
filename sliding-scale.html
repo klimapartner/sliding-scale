@@ -98,6 +98,7 @@
     handleTrack: function(e) {
         switch(e.detail.state) {
           case 'start':
+            this.fire("vstart",{value:this.value})
             this.oldvalue=this.value
             break;
           case 'track':
@@ -107,6 +108,7 @@
             this.ddx=e.detail.ddx
             break;
           case 'end':
+            this.fire("vend",{value:this.value})
             if(Math.abs(this.ddx)>5) setTimeout(this.fade,20,this)
             break;
         }
