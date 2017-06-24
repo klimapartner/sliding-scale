@@ -27,11 +27,14 @@
         vertical-align: middle;
       }
       #valuetext{display:flex;position:absolute;top:0px;right:10px;align-items:center;justify-content:flex-end;color:var(--name-color)}
+      #scrollarea{position:absolute;top:0;left:0;right:0;height:40px;width:100%}
       paper-input{width:5em;margin-right:5px}
       .bla{color: var(--center-marker-color);color:var(--value-color)}
     </style>
       <canvas id="canvas" height="[[height]]" width="[[width]]" on-track="handleTrack" on-down="handleTab"></canvas>
       <content select="sliding-marker"></content>
+      <div id="scrollarea">
+      </div>
       <div id="valuetext">
         <paper-input no-label-float id="textbox" value="[[rounded]]"  on-change="handleChange"></paper-input>
         <div>[[unit]]</div>
